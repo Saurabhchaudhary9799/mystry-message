@@ -4,6 +4,8 @@ import bcrypt from "bcryptjs";
 import { sendVerificationEmail } from "@/helpers/sendVerificationEmail";
 import { verify } from "crypto";
 
+
+
 export async function POST(request: Request) {
   await dbConnect();
 
@@ -23,7 +25,7 @@ export async function POST(request: Request) {
     }
 
     const existingUserByEmail = await UserModel.findOne({ email });
-
+    console.log(existingUserByEmail);
     const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
     if (existingUserByEmail) {
         if(existingUserByEmail.isVerified){
@@ -47,7 +49,7 @@ export async function POST(request: Request) {
         verifyCode,
         verifyCodeExpiry: expiryDate,
         isVerified: false,
-        isAcceptingMessage: true,
+        isAcceptingMessages: true,
         messages: [],
       });
 
@@ -55,16 +57,25 @@ export async function POST(request: Request) {
     }
 
     // send verification email
-
+    console.log(email , username ,verifyCode);
     const emailResponse = await sendVerificationEmail(
       email,
       username,
       verifyCode
     );
 
-    if(!emailResponse.success){
-        return Response.json({success: false, message:emailResponse.message },{status:500})
+
+    if (!emailResponse.success) {
+      return Response.json(
+        {
+          success: false,
+          message: emailResponse.message,
+        },
+        { status: 500 }
+      );
     }
+
+    
 
     return Response.json({success: true, message:"User registered successfully . please verify your email" },{status:201})
   } catch (error) {
